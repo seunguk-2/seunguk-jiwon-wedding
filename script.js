@@ -10,9 +10,17 @@ const contactEmail = document.querySelector("[data-contact-email]");
 const heroImage = document.querySelector("[data-hero-image]");
 const bouquetImage = document.querySelector("[data-bouquet-image]");
 const photoGrid = document.querySelector("[data-photo-grid]");
+const lightbox = document.querySelector("[data-lightbox]");
+const lightboxImage = document.querySelector("[data-lightbox-image]");
+const lightboxStatus = document.querySelector("[data-lightbox-status]");
+const lightboxCloseButtons = document.querySelectorAll("[data-lightbox-close]");
+const lightboxPrev = document.querySelector("[data-lightbox-prev]");
+const lightboxNext = document.querySelector("[data-lightbox-next]");
 const supportedLanguages = Object.keys(invitationContent.languages);
 const savedLanguage = getSavedLanguage();
 let currentLanguage = supportedLanguages.includes(savedLanguage) ? savedLanguage : invitationContent.defaultLanguage;
+let currentGalleryIndex = 0;
+let lastFocusedElement = null;
 
 function getSavedLanguage() {
   try {
@@ -66,6 +74,12 @@ function renderGallery() {
     const figure = document.createElement("figure");
     figure.className = index % 5 === 0 ? "photo-tile photo-tile-wide" : "photo-tile";
 
+    const button = document.createElement("button");
+    button.className = "photo-button";
+    button.type = "button";
+    button.setAttribute("aria-label", getLightboxStatus(index));
+    button.addEventListener("click", () => openLightbox(index));
+
     const image = document.createElement("img");
     image.src = src;
     image.alt = `${galleryAlt} ${index + 1}`.trim();
@@ -76,9 +90,61 @@ function renderGallery() {
     image.height = 1600;
     image.sizes = "(min-width: 768px) 34vw, calc(100vw - 2rem)";
 
-    figure.append(image);
+    button.append(image);
+    figure.append(button);
     photoGrid.append(figure);
   });
+}
+
+function getLightboxStatus(index) {
+  const template = getContent("lightbox.status") || "Photo {current} of {total}";
+  return template
+    .replace("{current}", String(index + 1))
+    .replace("{total}", String(invitationContent.assets.galleryImages.length));
+}
+
+function updateLightboxImage() {
+  if (!lightboxImage || !lightboxStatus) {
+    return;
+  }
+
+  const galleryAlt = getContent("images.galleryAlt") || "";
+  lightboxImage.src = invitationContent.assets.galleryImages[currentGalleryIndex];
+  lightboxImage.alt = `${galleryAlt} ${currentGalleryIndex + 1}`.trim();
+  lightboxStatus.textContent = getLightboxStatus(currentGalleryIndex);
+}
+
+function openLightbox(index) {
+  if (!lightbox) {
+    return;
+  }
+
+  lastFocusedElement = document.activeElement;
+  currentGalleryIndex = index;
+  updateLightboxImage();
+  lightbox.hidden = false;
+  document.body.classList.add("lightbox-open");
+  lightboxCloseButtons[0]?.focus();
+}
+
+function closeLightbox() {
+  if (!lightbox) {
+    return;
+  }
+
+  lightbox.hidden = true;
+  document.body.classList.remove("lightbox-open");
+  lightboxImage?.removeAttribute("src");
+
+  if (lastFocusedElement instanceof HTMLElement) {
+    lastFocusedElement.focus();
+  }
+}
+
+function showAdjacentPhoto(direction) {
+  const total = invitationContent.assets.galleryImages.length;
+  currentGalleryIndex = (currentGalleryIndex + direction + total) % total;
+  updateLightboxImage();
 }
 
 function applyContent() {
@@ -127,6 +193,9 @@ function applyContent() {
   }
 
   renderGallery();
+  if (lightbox && !lightbox.hidden) {
+    updateLightboxImage();
+  }
 
   navToggle.setAttribute("aria-label", getNavToggleLabel());
 
@@ -166,6 +235,34 @@ languageOptions.forEach((button) => {
     saveLanguage(currentLanguage);
     applyContent();
   });
+});
+
+lightboxCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeLightbox);
+});
+
+lightboxPrev?.addEventListener("click", () => showAdjacentPhoto(-1));
+lightboxNext?.addEventListener("click", () => showAdjacentPhoto(1));
+
+document.addEventListener("keydown", (event) => {
+  if (!lightbox || lightbox.hidden) {
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeLightbox();
+  }
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    showAdjacentPhoto(-1);
+  }
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    showAdjacentPhoto(1);
+  }
 });
 
 window.addEventListener("scroll", updateHeader, { passive: true });
