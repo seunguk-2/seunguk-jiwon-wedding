@@ -21,6 +21,35 @@ const savedLanguage = getSavedLanguage();
 let currentLanguage = supportedLanguages.includes(savedLanguage) ? savedLanguage : invitationContent.defaultLanguage;
 let currentGalleryIndex = 0;
 let lastFocusedElement = null;
+let lastTouchEnd = 0;
+
+function preventPageZoom(event) {
+  event.preventDefault();
+}
+
+document.addEventListener("gesturestart", preventPageZoom, { passive: false });
+document.addEventListener("gesturechange", preventPageZoom, { passive: false });
+document.addEventListener("gestureend", preventPageZoom, { passive: false });
+document.addEventListener(
+  "touchmove",
+  (event) => {
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
+  },
+  { passive: false },
+);
+document.addEventListener(
+  "touchend",
+  (event) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  },
+  { passive: false },
+);
 
 function getSavedLanguage() {
   try {
