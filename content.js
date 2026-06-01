@@ -83,6 +83,12 @@ window.INVITATION_CONTENT = {
       photos: {
         heading: "Gallery",
       },
+      lightbox: {
+        close: "Close gallery",
+        previous: "Previous photo",
+        next: "Next photo",
+        status: "Photo {current} of {total}",
+      },
       questions: {
         kicker: "Good To Know",
         heading: "Questions",
@@ -171,6 +177,12 @@ window.INVITATION_CONTENT = {
       },
       photos: {
         heading: "갤러리",
+      },
+      lightbox: {
+        close: "갤러리 닫기",
+        previous: "이전 사진",
+        next: "다음 사진",
+        status: "사진 {current} / {total}",
       },
       questions: {
         kicker: "참고 안내",
