@@ -16,7 +16,8 @@
       data-i18n-content="meta.ogDescription"
     />
     <meta property="og:image" content="assets/optimized/hero.jpg" />
-    <link rel="preload" href="assets/optimized/hero.jpg" as="image" />
+    <link rel="preload" href="assets/optimized/hero-mobile.jpg" as="image" media="(max-width: 767px)" />
+    <link rel="preload" href="assets/optimized/hero.jpg" as="image" media="(min-width: 768px)" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -53,6 +54,7 @@
     <main id="main">
       <section class="hero" id="top" aria-labelledby="hero-title">
         <picture>
+          <source media="(max-width: 767px)" srcset="assets/optimized/hero-mobile.jpg" />
           <img
             src="assets/optimized/hero.jpg"
             alt="SeungUk and Jiwon by the lake in the park"
